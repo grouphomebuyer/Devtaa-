@@ -638,8 +638,8 @@ BEGIN
     SELECT c.relnamespace::regnamespace::text AS s, c.relname AS n
       FROM pg_class c
       JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = 'tenant_id'
-     WHERE c.relkind = 'r' AND c.relnamespace::regnamespace::text = 'master'
-       AND NOT a.attnotnull IS false
+     WHERE c.relkind IN ('r','p') AND c.relnamespace::regnamespace::text = 'master'
+       AND NOT EXISTS (SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid)
   LOOP
     BEGIN
       PERFORM core.apply_tenant_rls(t.s, t.n);

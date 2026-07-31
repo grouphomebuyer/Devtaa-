@@ -56,5 +56,36 @@ SELECT core.next_document_no('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee') AS n1,
        core.next_document_no('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee') AS n2;
 
 \echo '--- TEST 7: RLS blocks cross-tenant read'
+-- Superusers bypass RLS unconditionally, so this test MUST run as a
+-- non-superuser member of aicos_app or it proves nothing.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'aicos_rls_probe') THEN
+    CREATE ROLE aicos_rls_probe NOLOGIN;
+  END IF;
+  GRANT aicos_app TO aicos_rls_probe;
+END $$;
+
+SET ROLE aicos_rls_probe;
+
+SET app.tenant_id = '11111111-1111-1111-1111-111111111111';
+SELECT 'own tenant rows (expect 1):   ' || count(*) FROM master.company;
+
 SET app.tenant_id = '00000000-0000-0000-0000-000000000000';
-SELECT 'rows visible to other tenant: ' || count(*) FROM master.company;
+SELECT 'other tenant rows (expect 0): ' || count(*) FROM master.company;
+
+\echo '--- TEST 8: audit log is immutable (expect: permission denied)'
+SET app.tenant_id = '11111111-1111-1111-1111-111111111111';
+DELETE FROM core.audit_log;
+
+RESET ROLE;
+
+\echo '--- TEST 9: every tenant-scoped table has RLS enabled (expect: none)'
+SELECT COALESCE(string_agg(n.nspname || '.' || c.relname, ', '),
+                'none - all tenant tables protected') AS unprotected_tables
+  FROM pg_class c
+  JOIN pg_namespace n  ON n.oid = c.relnamespace
+  JOIN pg_attribute a  ON a.attrelid = c.oid AND a.attname = 'tenant_id'
+ WHERE c.relkind IN ('r','p')
+   AND NOT c.relrowsecurity
+   AND NOT EXISTS (SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid);

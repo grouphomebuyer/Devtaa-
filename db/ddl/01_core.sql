@@ -56,16 +56,37 @@ CREATE OR REPLACE FUNCTION core.current_user_id() RETURNS uuid
 LANGUAGE sql STABLE AS $$ SELECT NULLIF(current_setting('app.user_id', true), '')::uuid $$;
 
 -- Applies tenant RLS + standard grants to a table in one call.
+--
+-- Works for both ordinary and partitioned tables (RLS on a partitioned parent
+-- propagates to its partitions).  Where tenant_id is NULLABLE the table holds
+-- platform defaults (e.g. statutory rate masters) alongside tenant overrides:
+-- those rows are readable by every tenant, but no tenant may create or modify
+-- them, so WITH CHECK still demands the caller's own tenant_id.
 CREATE OR REPLACE FUNCTION core.apply_tenant_rls(p_schema text, p_table text)
 RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+  v_nullable boolean;
+  v_using    text;
 BEGIN
+  SELECT NOT a.attnotnull INTO v_nullable
+    FROM pg_attribute a
+   WHERE a.attrelid = format('%I.%I', p_schema, p_table)::regclass
+     AND a.attname  = 'tenant_id';
+
+  IF v_nullable IS NULL THEN
+    RAISE EXCEPTION 'apply_tenant_rls: %.% has no tenant_id column', p_schema, p_table;
+  END IF;
+
+  v_using := CASE
+               WHEN v_nullable THEN 'tenant_id IS NULL OR tenant_id = core.current_tenant()'
+               ELSE 'tenant_id = core.current_tenant()'
+             END;
+
   EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', p_schema, p_table);
   EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', p_schema, p_table);
-  EXECUTE format($f$
-    CREATE POLICY tenant_isolation ON %I.%I
-      USING (tenant_id = core.current_tenant())
-      WITH CHECK (tenant_id = core.current_tenant())
-  $f$, p_schema, p_table);
+  EXECUTE format(
+    'CREATE POLICY tenant_isolation ON %I.%I USING (%s) WITH CHECK (tenant_id = core.current_tenant())',
+    p_schema, p_table, v_using);
   EXECUTE format('GRANT SELECT, INSERT, UPDATE ON %I.%I TO aicos_app', p_schema, p_table);
   EXECUTE format('GRANT SELECT ON %I.%I TO aicos_readonly', p_schema, p_table);
 END $$;
@@ -594,9 +615,10 @@ BEGIN
     SELECT c.relnamespace::regnamespace::text AS s, c.relname AS n
       FROM pg_class c
       JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = 'tenant_id'
-     WHERE c.relkind = 'r'
+     WHERE c.relkind IN ('r','p')                                        -- incl. partitioned parents
        AND c.relnamespace::regnamespace::text IN ('core','doc')
        AND c.relname <> 'tenant'
+       AND NOT EXISTS (SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid)  -- skip partitions
   LOOP
     PERFORM core.apply_tenant_rls(t.s, t.n);
   END LOOP;

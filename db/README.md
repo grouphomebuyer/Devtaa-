@@ -24,19 +24,31 @@ PostgreSQL 16 with `pgcrypto`, `citext`, `pg_trgm`, `btree_gist` and
 
 ## Validation status
 
-The DDL was executed against PostgreSQL 16.13. All four files apply cleanly.
-`99_invariant_tests.sql` was run and the following behaved as designed:
+The DDL was executed against PostgreSQL 16.13 — all four files apply cleanly,
+creating 123 tables. `99_invariant_tests.sql` was then run in full and every
+assertion behaved as designed:
 
-| Invariant | Mechanism | Result |
-|---|---|---|
-| A posted journal must balance | deferred constraint trigger `fin.assert_journal_balanced` | rejected `debit 100 <> credit 0` at COMMIT |
-| Balanced journal posts | same | accepted |
-| No posting into a locked period | trigger → `core.assert_period_open` | rejected `PERIOD_LOCKED` |
-| Stock can never go negative | `inv.apply_stock_movement` + `CHECK (quantity >= 0)` | rejected `NEGATIVE_STOCK` |
-| Receipt then issue, weighted average | same trigger | 10 in − 4 out = qty 6, value 600, avg rate 100 |
-| Gap-free document numbering | `core.next_document_no` + `pg_advisory_xact_lock` | `PO/DEVT/25-26/00001…00003`, no gaps |
-| Tenant isolation | RLS with `FORCE ROW LEVEL SECURITY` | own tenant 1 row, other tenant 0 rows (as non-superuser `aicos_app`) |
-| Audit log immutability | `REVOKE UPDATE, DELETE` | `permission denied for table audit_log` |
+| # | Invariant | Mechanism | Result |
+|---|---|---|---|
+| 1 | A posted journal must balance | deferred constraint trigger `fin.assert_journal_balanced` | rejected `JOURNAL_UNBALANCED: debit 100 <> credit 0` at COMMIT |
+| 2 | A balanced journal posts | same | accepted |
+| 3 | No posting into a locked period | trigger → `core.assert_period_open` | rejected `PERIOD_LOCKED` |
+| 4 | Stock can never go negative | `inv.apply_stock_movement` + `CHECK (quantity >= 0)` | rejected `NEGATIVE_STOCK` |
+| 5 | Receipt then issue, weighted average | same trigger | 10 in − 4 out → qty 6, value 600, avg rate 100 |
+| 6 | Gap-free document numbering | `core.next_document_no` + `pg_advisory_xact_lock` | `PO/DEVT/25-26/00001`, `…00002` — no gaps |
+| 7 | Tenant isolation | RLS with `FORCE ROW LEVEL SECURITY` | own tenant 1 row, other tenant 0 rows |
+| 8 | Audit log immutability | `REVOKE UPDATE, DELETE` | `permission denied for table audit_log` |
+| 9 | No tenant table left unprotected | catalogue query over `pg_class.relrowsecurity` | `none - all tenant tables protected` |
+
+Test 9 is the one worth wiring into CI unchanged (Phase 9 §5): it fails the build
+the moment someone adds a table with a `tenant_id` column and forgets its policy.
+It caught four such tables during authoring — two partitioned parents that the
+`relkind = 'r'` loop skipped, and two platform-default rate masters whose
+`tenant_id` is nullable. `core.apply_tenant_rls` now handles both cases: it
+covers partitioned parents (RLS propagates to their partitions), and for nullable
+`tenant_id` it emits a policy where platform-default rows (`tenant_id IS NULL`)
+are readable by every tenant while `WITH CHECK` still forbids any tenant from
+writing them.
 
 > Note on the stock trigger: `INSERT … ON CONFLICT DO UPDATE` cannot be used for the
 > balance upsert. PostgreSQL evaluates CHECK constraints against the *proposed* insert
@@ -53,6 +65,11 @@ for f in db/ddl/0*.sql; do psql -v ON_ERROR_STOP=1 -d aicos_dev -f "$f"; done
 psql -d aicos_dev -f db/ddl/99_invariant_tests.sql   # expect the FAIL cases to raise
 ```
 
-Tests 1, 3 and 4 are **expected to raise errors** — that is the assertion. Tests 2, 5, 6
-and 7 must succeed. Connect as a non-superuser member of `aicos_app` to exercise RLS;
-superusers bypass row-level security and will see every tenant's rows.
+Tests 1, 3, 4 and 8 are **expected to raise errors** — the error *is* the assertion.
+Tests 2, 5, 6, 7 and 9 must succeed with the values shown above.
+
+The suite is self-contained: test 7 creates and assumes a non-superuser role
+(`aicos_rls_probe`, a member of `aicos_app`) before probing tenant isolation.
+This matters — superusers bypass row-level security unconditionally, so running
+the probe as `postgres` would report every tenant's rows as visible and appear
+to show a leak that does not exist.
