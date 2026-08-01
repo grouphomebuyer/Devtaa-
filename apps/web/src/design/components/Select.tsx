@@ -1,6 +1,7 @@
 import { forwardRef, type SelectHTMLAttributes } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../cn';
+import { useFieldProps } from './FormField';
 
 export interface SelectOption<T extends string = string> {
   value: T;
@@ -25,6 +26,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   { options, invalid, selectSize = 'md', placeholder, className, ...rest },
   ref,
 ) {
+  // Adopts the id / aria-describedby / aria-invalid of an enclosing FormField.
+  const field = useFieldProps();
+  const isInvalid = invalid ?? field.invalid;
   const groups = new Map<string, SelectOption[]>();
   const ungrouped: SelectOption[] = [];
   for (const option of options) {
@@ -41,13 +45,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     <div className="relative">
       <select
         ref={ref}
-        aria-invalid={invalid || undefined}
+        id={field.id}
+        aria-describedby={field['aria-describedby']}
+        aria-invalid={isInvalid || undefined}
         className={cn(
           'w-full appearance-none rounded border border-line-strong bg-surface pr-7 text-content',
           'transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/35',
           'disabled:cursor-not-allowed disabled:bg-surface-inset disabled:text-content-tertiary',
           selectSize === 'sm' ? 'h-7 pl-2 text-xs' : 'h-8 pl-2.5 text-dense',
-          invalid && 'border-danger focus:border-danger focus:ring-danger/30',
+          isInvalid && 'border-danger focus:border-danger focus:ring-danger/30',
           className,
         )}
         {...rest}

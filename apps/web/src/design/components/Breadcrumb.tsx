@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '../cn';
+import { asRoute } from '@/lib/links';
 
 export interface Crumb {
   label: string;
@@ -19,7 +20,7 @@ export function Breadcrumb({ items, className }: { items: Crumb[]; className?: s
             <li key={`${item.label}-${i}`} className="flex min-w-0 items-center gap-1">
               {item.to && !last ? (
                 <Link
-                  to={item.to}
+                  to={asRoute(item.to)}
                   params={item.params as never}
                   className="truncate rounded text-content-tertiary transition-colors hover:text-content hover:underline"
                 >

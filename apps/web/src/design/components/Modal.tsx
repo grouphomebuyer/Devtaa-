@@ -11,7 +11,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../cn';
 import { Button } from './Button';
-import { Textarea } from './Input';
+import { Input, Textarea } from './Input';
 import { FormField } from './FormField';
 
 const FOCUSABLE =
@@ -252,11 +252,11 @@ export function ConfirmDialog({
             required
             error={touched && typedMismatch ? `Enter exactly “${typedConfirmation}”.` : undefined}
           >
-            <input
+            <Input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              aria-invalid={touched && typedMismatch}
-              className="h-8 w-full rounded border border-line-strong bg-surface px-2.5 font-mono text-dense text-content focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/35"
+              invalid={touched && typedMismatch}
+              className="font-mono"
             />
           </FormField>
         )}

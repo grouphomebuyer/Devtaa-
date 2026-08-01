@@ -33,9 +33,11 @@
   --border-strong: 195 202 212;
 
   /* ---- text ---- */
+  /* text-tertiary is tuned to clear 4.5:1 on --surface (WCAG 2.1 AA 1.4.3),
+   * because it is used at 11 px, which is not "large text". */
   --text: 18 22 28;
   --text-secondary: 74 85 99;
-  --text-tertiary: 120 130 143;
+  --text-tertiary: 98 107 121;
   --text-inverse: 255 255 255;
 
   /* ---- primary ---- */
@@ -103,7 +105,7 @@
 
   --text: 230 234 240;
   --text-secondary: 162 172 187;
-  --text-tertiary: 111 121 135;
+  --text-tertiary: 129 139 155;
   --text-inverse: 12 14 18;
 
   --primary: 77 130 243;

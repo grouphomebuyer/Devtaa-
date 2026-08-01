@@ -72,7 +72,7 @@ export function formatMoney(
   const { decimals = 0, symbol = true, signed = false } = options;
   const n = parseAmount(value);
   const body = groupIndian(n, decimals, decimals);
-  const prefix = symbol ? RUPEE + NBSP : '';
+  const prefix = symbol ? RUPEE : '';
   if (signed && n > 0) return `+${prefix}${body}`;
   if (body.startsWith(MINUS)) return `${MINUS}${prefix}${body.slice(1)}`;
   return `${prefix}${body}`;
@@ -86,7 +86,7 @@ export function formatMoneyCompact(value: MoneyString | number | null | undefine
   const n = parseAmount(value);
   const abs = Math.abs(n);
   const sign = n < 0 ? MINUS : '';
-  const p = RUPEE + NBSP;
+  const p = RUPEE;
 
   if (abs >= 1e7) return `${sign}${p}${trimZero(abs / 1e7, abs >= 1e8 ? 1 : 2)}Cr`;
   if (abs >= 1e5) return `${sign}${p}${trimZero(abs / 1e5, abs >= 1e6 ? 1 : 2)}L`;

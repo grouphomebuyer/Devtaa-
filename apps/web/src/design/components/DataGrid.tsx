@@ -147,6 +147,14 @@ export function DataGrid<T>({
 
   const template = allColumns.map((c) => c.width ?? 'minmax(120px, 1fr)').join(' ');
 
+  /**
+   * The grid must be at least as wide as the sum of its column minimums —
+   * below that it scrolls horizontally rather than crushing cells. Using
+   * `max-content` here instead would make every `1fr` track resolve to its
+   * content width and overflow needlessly.
+   */
+  const minWidth = allColumns.reduce((sum, c) => sum + trackMin(c.width), 0);
+
   const moveFocus = useCallback(
     (r: number, c: number) => {
       const nr = Math.max(0, Math.min(sorted.length - 1, r));
@@ -250,7 +258,7 @@ export function DataGrid<T>({
           aria-colcount={allColumns.length}
           aria-busy={loading || undefined}
           className="min-w-full"
-          style={{ minWidth: 'max-content' }}
+          style={{ minWidth }}
         >
           {/* header */}
           <div role="rowgroup" className={cn(stickyHeader && 'sticky top-0 z-10')}>
@@ -421,6 +429,16 @@ export function DataGrid<T>({
       </div>
     </div>
   );
+}
+
+/** Minimum pixel width of a CSS grid track declaration. */
+function trackMin(width?: string): number {
+  if (!width) return 120;
+  const minmax = /minmax\(\s*([\d.]+)px/.exec(width);
+  if (minmax) return Number(minmax[1]);
+  const fixed = /^([\d.]+)px$/.exec(width.trim());
+  if (fixed) return Number(fixed[1]);
+  return 120;
 }
 
 function SkeletonRows({

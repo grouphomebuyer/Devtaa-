@@ -1,4 +1,4 @@
-import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '../cn';
 import { CountBadge } from './Badge';
 
@@ -22,6 +22,7 @@ export function Tabs({
   label,
   className,
   size = 'md',
+  idPrefix,
 }: {
   items: TabItem[];
   value: string;
@@ -29,8 +30,14 @@ export function Tabs({
   label: string;
   className?: string;
   size?: 'sm' | 'md';
+  /**
+   * Shared with the matching `<TabPanel tabsId>` so `aria-controls` and
+   * `aria-labelledby` resolve to real elements. A generated id cannot be used
+   * here because the panels are rendered by the caller.
+   */
+  idPrefix: string;
 }) {
-  const base = useId();
+  const base = idPrefix;
   const listRef = useRef<HTMLDivElement>(null);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -98,7 +105,8 @@ export function TabPanel({
   className,
 }: {
   id: string;
-  tabsId?: string;
+  /** Must equal the `idPrefix` given to the matching `<Tabs>`. */
+  tabsId: string;
   active: boolean;
   children: ReactNode;
   className?: string;
@@ -107,7 +115,8 @@ export function TabPanel({
   return (
     <div
       role="tabpanel"
-      id={tabsId ? `${tabsId}-panel-${id}` : undefined}
+      id={`${tabsId}-panel-${id}`}
+      aria-labelledby={`${tabsId}-tab-${id}`}
       tabIndex={0}
       className={cn('focus-visible:outline-none', className)}
     >

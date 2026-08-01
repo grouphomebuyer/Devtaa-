@@ -10,6 +10,7 @@ import {
 import { Search, X } from 'lucide-react';
 import { cn } from '../cn';
 import { groupIndian, parseAmount } from '../format';
+import { useFieldProps } from './FormField';
 
 const FIELD_BASE =
   'w-full rounded border bg-surface text-content placeholder:text-content-tertiary ' +
@@ -28,7 +29,8 @@ const SIZE: Record<InputSize, string> = {
   md: 'h-8 px-2.5 text-dense',
 };
 
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
   inputSize?: InputSize;
   invalid?: boolean;
   /** Leading adornment, e.g. an icon or `₹`. */
@@ -43,15 +45,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { inputSize = 'md', invalid, prefix, suffix, numeric, className, ...rest },
   ref,
 ) {
+  // Adopts the id / aria-describedby / aria-invalid of an enclosing FormField.
+  const fieldProps = useFieldProps();
+  const isInvalid = invalid ?? fieldProps.invalid;
   const field = (
     <input
       ref={ref}
-      aria-invalid={invalid || undefined}
+      id={fieldProps.id}
+      aria-describedby={fieldProps['aria-describedby']}
+      aria-invalid={isInvalid || undefined}
       className={cn(
         FIELD_BASE,
         SIZE[inputSize],
         numeric && 'text-right tnum',
-        invalid && INVALID,
+        isInvalid && INVALID,
         prefix && 'pl-7',
         suffix && 'pr-9',
         className,
@@ -93,12 +100,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   { invalid, className, rows = 3, ...rest },
   ref,
 ) {
+  const fieldProps = useFieldProps();
+  const isInvalid = invalid ?? fieldProps.invalid;
   return (
     <textarea
       ref={ref}
       rows={rows}
-      aria-invalid={invalid || undefined}
-      className={cn(FIELD_BASE, 'px-2.5 py-1.5 text-dense', invalid && INVALID, className)}
+      id={fieldProps.id}
+      aria-describedby={fieldProps['aria-describedby']}
+      aria-invalid={isInvalid || undefined}
+      className={cn(FIELD_BASE, 'px-2.5 py-1.5 text-dense', isInvalid && INVALID, className)}
       {...rest}
     />
   );
