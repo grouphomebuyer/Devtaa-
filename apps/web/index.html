@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en-IN" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="AI-COS — construction and redevelopment ERP" />
+    <title>AI-COS</title>
+    <script>
+      // Applied before first paint so the shell never flashes the wrong theme.
+      (function () {
+        try {
+          var stored = localStorage.getItem('aicos.theme');
+          var mql = window.matchMedia('(prefers-color-scheme: dark)');
+          var theme = stored === 'light' || stored === 'dark' ? stored : mql.matches ? 'dark' : 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body class="h-full">
+    <div id="root" class="h-full"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

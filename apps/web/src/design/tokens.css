@@ -1,0 +1,173 @@
+/*
+ * AI-COS design tokens.
+ *
+ * Every value is a space-separated RGB triple so Tailwind's `<alpha-value>`
+ * modifier works (`bg-surface/60`). Components must never hard-code a hex
+ * value — if a colour is needed that is not here, the token set is wrong.
+ *
+ * Semantic layers (Phase 6 §4):
+ *   primary  actions, links
+ *   success  approved, matched, within budget
+ *   warning  pending, near threshold, low confidence
+ *   danger   rejected, overdue, budget breach
+ *   ai       AI-generated content — reserved exclusively for this
+ *   neutral  structure, text, borders
+ */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* ---- surfaces ---- */
+  --canvas: 246 247 249;
+  --surface: 255 255 255;
+  --surface-raised: 255 255 255;
+  --surface-subtle: 241 243 246;
+  --surface-inset: 238 240 244;
+  --surface-hover: 243 245 248;
+  --surface-selected: 234 240 254;
+
+  /* ---- borders ---- */
+  --border-subtle: 236 238 242;
+  --border: 223 227 233;
+  --border-strong: 195 202 212;
+
+  /* ---- text ---- */
+  --text: 18 22 28;
+  --text-secondary: 74 85 99;
+  --text-tertiary: 120 130 143;
+  --text-inverse: 255 255 255;
+
+  /* ---- primary ---- */
+  --primary: 37 87 214;
+  --primary-hover: 30 73 184;
+  --primary-active: 25 61 155;
+  --primary-fg: 255 255 255;
+  --primary-subtle: 234 240 254;
+  --primary-text: 27 71 173;
+  --primary-border: 187 207 250;
+
+  /* ---- status ---- */
+  --success: 15 107 69;
+  --success-bg: 230 246 238;
+  --success-border: 169 220 196;
+
+  --warning: 138 83 0;
+  --warning-bg: 253 243 226;
+  --warning-border: 240 214 168;
+
+  --danger: 176 35 35;
+  --danger-hover: 148 26 26;
+  --danger-bg: 253 236 236;
+  --danger-border: 244 188 188;
+
+  --info: 27 95 168;
+  --info-bg: 232 242 252;
+  --info-border: 182 214 242;
+
+  --ai: 109 59 209;
+  --ai-bg: 242 236 253;
+  --ai-border: 217 200 250;
+
+  --neutral-bg: 240 242 245;
+  --neutral-border: 223 227 233;
+
+  /* ---- data visualisation ramp (budget vs committed vs incurred) ---- */
+  --data-1: 37 87 214;
+  --data-2: 12 148 136;
+  --data-3: 217 119 6;
+  --data-4: 109 59 209;
+  --data-5: 176 35 35;
+
+  --focus: 37 87 214;
+  --overlay: 15 20 28;
+
+  --shadow-overlay: 0 12px 32px -8px rgb(15 20 28 / 0.18), 0 2px 6px -2px rgb(15 20 28 / 0.1);
+  --shadow-popover: 0 6px 16px -6px rgb(15 20 28 / 0.16), 0 1px 3px rgb(15 20 28 / 0.08);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas: 12 14 18;
+  --surface: 20 23 29;
+  --surface-raised: 25 29 36;
+  --surface-subtle: 30 35 43;
+  --surface-inset: 16 19 24;
+  --surface-hover: 28 33 41;
+  --surface-selected: 22 35 61;
+
+  --border-subtle: 31 36 44;
+  --border: 42 49 59;
+  --border-strong: 60 69 82;
+
+  --text: 230 234 240;
+  --text-secondary: 162 172 187;
+  --text-tertiary: 111 121 135;
+  --text-inverse: 12 14 18;
+
+  --primary: 77 130 243;
+  --primary-hover: 107 152 247;
+  --primary-active: 134 172 249;
+  --primary-fg: 8 12 20;
+  --primary-subtle: 22 35 61;
+  --primary-text: 143 178 249;
+  --primary-border: 40 62 106;
+
+  --success: 78 203 143;
+  --success-bg: 16 38 28;
+  --success-border: 31 76 55;
+
+  --warning: 224 166 63;
+  --warning-bg: 42 32 17;
+  --warning-border: 77 58 23;
+
+  --danger: 242 114 111;
+  --danger-hover: 246 143 140;
+  --danger-bg: 44 20 22;
+  --danger-border: 87 38 42;
+
+  --info: 98 168 240;
+  --info-bg: 16 32 47;
+  --info-border: 31 65 96;
+
+  --ai: 169 139 245;
+  --ai-bg: 29 23 48;
+  --ai-border: 57 44 102;
+
+  --neutral-bg: 30 35 43;
+  --neutral-border: 42 49 59;
+
+  --data-1: 77 130 243;
+  --data-2: 45 191 175;
+  --data-3: 235 159 55;
+  --data-4: 169 139 245;
+  --data-5: 242 114 111;
+
+  --focus: 107 152 247;
+  --overlay: 0 0 0;
+
+  --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7), 0 2px 8px -2px rgb(0 0 0 / 0.5);
+  --shadow-popover: 0 8px 20px -8px rgb(0 0 0 / 0.6), 0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+/* ---- geometry: 4 px spacing scale, dense ERP row heights ---- */
+:root {
+  --radius-sm: 3px;
+  --radius: 5px;
+  --radius-lg: 8px;
+
+  --row-h-compact: 30px;
+  --row-h: 34px;
+  --row-h-relaxed: 40px;
+
+  --topbar-h: 48px;
+  --subbar-h: 40px;
+  --nav-w: 232px;
+  --nav-w-collapsed: 52px;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    monospace;
+}
