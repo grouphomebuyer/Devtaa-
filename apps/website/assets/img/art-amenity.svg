@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration of a landscaped podium deck with swimming pool">
+  <defs>
+    <linearGradient id="aSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E2E26"/>
+      <stop offset="70%" stop-color="#3E6B58"/>
+      <stop offset="100%" stop-color="#C0B18C"/>
+    </linearGradient>
+    <linearGradient id="aPool" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7FC8B4"/>
+      <stop offset="100%" stop-color="#1C5344"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#aSky)"/>
+  <circle cx="120" cy="110" r="56" fill="#F3E8D2" opacity=".38"/>
+
+  <!-- background towers -->
+  <g opacity=".55" fill="#0A211B">
+    <rect x="470" y="60" width="90" height="300"/>
+    <rect x="580" y="120" width="70" height="240"/>
+    <rect x="670" y="30" width="105" height="330"/>
+  </g>
+  <g fill="#DCBE83" opacity=".22">
+    <rect x="484" y="86" width="62" height="14"/><rect x="484" y="120" width="62" height="14"/>
+    <rect x="484" y="154" width="62" height="14"/><rect x="484" y="188" width="62" height="14"/>
+    <rect x="686" y="60" width="74" height="14"/><rect x="686" y="94" width="74" height="14"/>
+    <rect x="686" y="128" width="74" height="14"/><rect x="686" y="162" width="74" height="14"/>
+  </g>
+
+  <!-- deck -->
+  <rect y="360" width="800" height="240" fill="#E2D9CA"/>
+  <g stroke="#C9B79C" stroke-width="3">
+    <path d="M0 400h800M0 448h800M0 496h800M0 544h800"/>
+  </g>
+
+  <!-- pool -->
+  <rect x="150" y="400" width="500" height="150" rx="14" fill="url(#aPool)"/>
+  <g stroke="#F3E8D2" stroke-width="4" opacity=".45" fill="none">
+    <path d="M180 440q40-14 80 0t80 0 80 0 80 0 80 0"/>
+    <path d="M180 486q40-14 80 0t80 0 80 0 80 0 80 0"/>
+    <path d="M180 522q40-14 80 0t80 0 80 0 80 0 80 0"/>
+  </g>
+  <rect x="150" y="400" width="500" height="150" rx="14" fill="none" stroke="#C6A15B" stroke-width="5"/>
+
+  <!-- loungers -->
+  <g fill="#14453A">
+    <rect x="40" y="424" width="86" height="14" rx="7"/>
+    <path d="M40 424l-6-26 24-6 8 26z"/>
+    <rect x="52" y="438" width="8" height="18"/><rect x="110" y="438" width="8" height="18"/>
+    <rect x="40" y="490" width="86" height="14" rx="7"/>
+    <path d="M40 490l-6-26 24-6 8 26z"/>
+    <rect x="52" y="504" width="8" height="18"/><rect x="110" y="504" width="8" height="18"/>
+  </g>
+  <!-- parasol -->
+  <rect x="694" y="404" width="5" height="120" fill="#8A6E44"/>
+  <path d="M628 406h136l-68-56z" fill="#C6A15B"/>
+
+  <!-- planters -->
+  <g>
+    <rect x="150" y="336" width="500" height="26" fill="#C9B79C"/>
+    <g fill="#2A6F5C">
+      <circle cx="200" cy="330" r="26"/><circle cx="240" cy="336" r="18"/>
+      <circle cx="400" cy="326" r="30"/><circle cx="445" cy="334" r="20"/>
+      <circle cx="590" cy="330" r="24"/><circle cx="628" cy="336" r="17"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration of a sunlit living room interior">
+  <defs>
+    <linearGradient id="iWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F7F2E8"/>
+      <stop offset="100%" stop-color="#E4DACB"/>
+    </linearGradient>
+    <linearGradient id="iView" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#BFD9C9"/>
+      <stop offset="60%" stop-color="#7FB19B"/>
+      <stop offset="100%" stop-color="#2A6F5C"/>
+    </linearGradient>
+    <linearGradient id="iSun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F3E8D2" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#F3E8D2" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#iWall)"/>
+
+  <!-- floor to ceiling window with louvers -->
+  <rect x="380" y="60" width="360" height="420" fill="url(#iView)"/>
+  <g fill="#0E2E26" opacity=".18">
+    <rect x="380" y="92" width="360" height="7"/><rect x="380" y="132" width="360" height="7"/>
+    <rect x="380" y="172" width="360" height="7"/><rect x="380" y="212" width="360" height="7"/>
+    <rect x="380" y="252" width="360" height="7"/><rect x="380" y="292" width="360" height="7"/>
+  </g>
+  <rect x="552" y="60" width="9" height="420" fill="#FBF9F5"/>
+  <rect x="380" y="60" width="360" height="12" fill="#0E2E26" opacity=".75"/>
+  <rect x="380" y="468" width="360" height="12" fill="#0E2E26" opacity=".75"/>
+  <!-- sunlight wash -->
+  <path d="M380 60 L740 60 L560 600 L120 600 Z" fill="url(#iSun)"/>
+
+  <!-- floor -->
+  <rect y="480" width="800" height="120" fill="#C9B79C"/>
+  <rect y="480" width="800" height="8" fill="#A87F38" opacity=".5"/>
+  <!-- rug -->
+  <ellipse cx="270" cy="545" rx="200" ry="42" fill="#E2D9CA"/>
+
+  <!-- sofa -->
+  <rect x="90" y="392" width="250" height="80" rx="10" fill="#14453A"/>
+  <rect x="80" y="428" width="270" height="62" rx="12" fill="#1C5344"/>
+  <rect x="108" y="404" width="70" height="46" rx="8" fill="#C6A15B" opacity=".85"/>
+  <rect x="196" y="404" width="70" height="46" rx="8" fill="#F1EBE1" opacity=".8"/>
+  <rect x="96" y="488" width="14" height="24" fill="#8A6E44"/>
+  <rect x="322" y="488" width="14" height="24" fill="#8A6E44"/>
+
+  <!-- coffee table -->
+  <rect x="180" y="512" width="150" height="10" rx="5" fill="#8A6E44"/>
+  <rect x="196" y="522" width="8" height="24" fill="#8A6E44"/>
+  <rect x="308" y="522" width="8" height="24" fill="#8A6E44"/>
+
+  <!-- plant -->
+  <rect x="352" y="440" width="42" height="52" rx="6" fill="#A87F38"/>
+  <path d="M373 440c-30-10-40-42-30-70 24 8 36 34 34 60 6-30 26-52 52-56 4 32-18 60-52 66z" fill="#2A6F5C"/>
+
+  <!-- wall art -->
+  <rect x="110" y="150" width="120" height="150" fill="#FBF9F5" stroke="#C6A15B" stroke-width="4"/>
+  <path d="M124 268l32-52 26 34 22-26 26 44z" fill="#2A6F5C" opacity=".5"/>
+  <circle cx="196" cy="188" r="14" fill="#C6A15B" opacity=".7"/>
+
+  <!-- pendant light -->
+  <rect x="298" y="60" width="3" height="70" fill="#8A6E44"/>
+  <path d="M270 130h60l-14 32h-32z" fill="#C6A15B"/>
+</svg>

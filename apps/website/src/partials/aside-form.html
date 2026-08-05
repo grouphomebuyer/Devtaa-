@@ -1,0 +1,43 @@
+<aside class="project-aside">
+  <div class="form-card">
+    <h3>Get the price sheet</h3>
+    <p class="form-note">Floor plans, payment schedule and current availability for {{projectName}}.</p>
+    <form data-enquiry-form novalidate>
+      <div class="form-status" role="status" aria-live="polite"></div>
+      <input type="hidden" name="project" value="{{projectName}}">
+      <div class="honeypot"><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"></div>
+
+      <div class="field">
+        <label for="a-name">Full name <span class="req">*</span></label>
+        <input id="a-name" name="name" type="text" placeholder="Your name" required autocomplete="name">
+        <span class="field__err"></span>
+      </div>
+      <div class="field">
+        <label for="a-phone">Mobile <span class="req">*</span></label>
+        <input id="a-phone" name="phone" type="tel" placeholder="10-digit number" required autocomplete="tel">
+        <span class="field__err"></span>
+      </div>
+      <div class="field">
+        <label for="a-email">Email</label>
+        <input id="a-email" name="email" type="email" placeholder="you@email.com" autocomplete="email">
+        <span class="field__err"></span>
+      </div>
+      <div class="field">
+        <label for="a-config">Configuration</label>
+        <select id="a-config" name="config">{{configOptions}}</select>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" required>
+        <span>I authorise Devtaa Developers to contact me about this enquiry, overriding my DNC/NDNC registration.</span>
+      </label>
+
+      <button class="btn btn--gold btn--block" type="submit">Send Enquiry</button>
+    </form>
+
+    <div style="margin-top:18px;display:grid;gap:10px">
+      <a class="btn btn--outline btn--block" href="tel:" data-phone-link>Call the sales desk</a>
+      <a class="btn btn--outline btn--block" href="#" data-wa-link data-wa-message="Hello Devtaa Developers, I would like details of {{projectName}}.">Chat on WhatsApp</a>
+    </div>
+  </div>
+</aside>

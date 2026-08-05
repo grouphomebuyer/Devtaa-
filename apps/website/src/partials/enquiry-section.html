@@ -1,0 +1,78 @@
+<section class="section" id="enquire">
+  <div class="wrap split">
+    <div class="reveal">
+      <span class="eyebrow">Get in touch</span>
+      <h2>Tell us what you are looking for.</h2>
+      <p class="lead">Share a few details and a Devtaa sales manager &mdash; not a call centre &mdash; will get back to you within one working day with availability, the current price sheet and a site-visit slot.</p>
+
+      <div class="footer__contact" style="color:var(--body);margin-top:32px;display:grid;gap:18px">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-600)" stroke-width="1.8" style="width:18px;height:18px;flex:none;margin-top:4px" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span><strong style="color:var(--ink)">Sales desk</strong><br><a href="tel:" data-phone-link data-phone-text>+91 98204 00000</a> &middot; 9 am &ndash; 8 pm, all days</span>
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-600)" stroke-width="1.8" style="width:18px;height:18px;flex:none;margin-top:4px" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+          <span><strong style="color:var(--ink)">Email</strong><br><a href="mailto:sales@devtaadevelopers.com">sales@devtaadevelopers.com</a></span>
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-600)" stroke-width="1.8" style="width:18px;height:18px;flex:none;margin-top:4px" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span><strong style="color:var(--ink)">Corporate office</strong><br>Mumbai, Maharashtra, India</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="form-card">
+        <h3>Enquire now</h3>
+        <p class="form-note">No spam, and your number is never resold.</p>
+        <form data-enquiry-form novalidate>
+          <div class="form-status" role="status" aria-live="polite"></div>
+          <input type="hidden" name="project" value="{{formSource}}">
+          <div class="honeypot"><input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"></div>
+
+          <div class="field">
+            <label for="e-name">Full name <span class="req">*</span></label>
+            <input id="e-name" name="name" type="text" placeholder="Your name" required autocomplete="name">
+            <span class="field__err"></span>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="e-phone">Mobile <span class="req">*</span></label>
+              <input id="e-phone" name="phone" type="tel" placeholder="10-digit number" required autocomplete="tel">
+              <span class="field__err"></span>
+            </div>
+            <div class="field">
+              <label for="e-email">Email</label>
+              <input id="e-email" name="email" type="email" placeholder="you@email.com" autocomplete="email">
+              <span class="field__err"></span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="e-config">I am interested in</label>
+            <select id="e-config" name="config">
+              <option>1 BHK</option>
+              <option selected>2 BHK</option>
+              <option>3 BHK</option>
+              <option>Society redevelopment</option>
+              <option>Channel partner tie-up</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="e-message">Message</label>
+            <textarea id="e-message" name="message" placeholder="Preferred location, budget or a good time to call"></textarea>
+          </div>
+
+          <label class="consent">
+            <input type="checkbox" required>
+            <span>I authorise Devtaa Developers and its representatives to contact me by phone, WhatsApp, SMS or email about this enquiry, overriding my DNC/NDNC registration.</span>
+          </label>
+
+          <button class="btn btn--dark btn--block" type="submit">Send Enquiry</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

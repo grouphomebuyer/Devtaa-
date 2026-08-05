@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Devtaa Developers monogram">
+  <defs>
+    <linearGradient id="dvGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#DCBE83"/>
+      <stop offset="55%" stop-color="#C6A15B"/>
+      <stop offset="100%" stop-color="#A87F38"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="10" fill="#0E2E26"/>
+  <rect x="5.5" y="5.5" width="89" height="89" rx="7" fill="none" stroke="url(#dvGold)" stroke-width="1.1" opacity=".55"/>
+  <!-- monogram D : vertical stem + architectural arc -->
+  <path d="M30 24h5.5v52H30z" fill="url(#dvGold)"/>
+  <path d="M39 24h13.5c12.4 0 21 10.6 21 26S64.9 76 52.5 76H39v-7.5h13c8.3 0 13.6-7.1 13.6-18.5S60.3 31.5 52 31.5H39z" fill="url(#dvGold)"/>
+  <!-- skyline notch: three towers rising from the counter -->
+  <path d="M45 60h3.5v8.5H45zM50.5 54h3.5v14.5h-3.5zM56 58h3.5v10.5H56z" fill="#0E2E26"/>
+  <path d="M45 44.5h14.5v3H45z" fill="#0E2E26" opacity=".45"/>
+</svg>

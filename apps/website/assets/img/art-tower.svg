@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration of a residential tower facade">
+  <defs>
+    <linearGradient id="tSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#123A30"/>
+      <stop offset="100%" stop-color="#2A6F5C"/>
+    </linearGradient>
+    <linearGradient id="tFace" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F1EBE1"/>
+      <stop offset="55%" stop-color="#E2D9CA"/>
+      <stop offset="100%" stop-color="#BFB3A0"/>
+    </linearGradient>
+    <linearGradient id="tGlass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5E9C88"/>
+      <stop offset="100%" stop-color="#14453A"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#tSky)"/>
+  <circle cx="640" cy="120" r="70" fill="#DCBE83" opacity=".28"/>
+
+  <!-- back slab -->
+  <rect x="80" y="120" width="150" height="480" fill="#0E2E26" opacity=".8"/>
+  <g fill="#DCBE83" opacity=".2">
+    <rect x="96" y="150" width="118" height="18"/><rect x="96" y="196" width="118" height="18"/>
+    <rect x="96" y="242" width="118" height="18"/><rect x="96" y="288" width="118" height="18"/>
+    <rect x="96" y="334" width="118" height="18"/><rect x="96" y="380" width="118" height="18"/>
+    <rect x="96" y="426" width="118" height="18"/><rect x="96" y="472" width="118" height="18"/>
+  </g>
+
+  <!-- main tower -->
+  <rect x="240" y="40" width="330" height="560" fill="url(#tFace)"/>
+  <!-- balcony bands -->
+  <g>
+    <rect x="240" y="78" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="150" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="222" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="294" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="366" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="438" width="330" height="10" fill="#A87F38" opacity=".45"/>
+    <rect x="240" y="510" width="330" height="10" fill="#A87F38" opacity=".45"/>
+  </g>
+  <!-- glazing -->
+  <g fill="url(#tGlass)">
+    <rect x="262" y="94" width="128" height="52"/><rect x="410" y="94" width="138" height="52"/>
+    <rect x="262" y="166" width="128" height="52"/><rect x="410" y="166" width="138" height="52"/>
+    <rect x="262" y="238" width="128" height="52"/><rect x="410" y="238" width="138" height="52"/>
+    <rect x="262" y="310" width="128" height="52"/><rect x="410" y="310" width="138" height="52"/>
+    <rect x="262" y="382" width="128" height="52"/><rect x="410" y="382" width="138" height="52"/>
+    <rect x="262" y="454" width="128" height="52"/><rect x="410" y="454" width="138" height="52"/>
+    <rect x="262" y="526" width="128" height="52"/><rect x="410" y="526" width="138" height="52"/>
+  </g>
+  <!-- vertical fin -->
+  <rect x="392" y="40" width="14" height="560" fill="#FBF9F5" opacity=".85"/>
+  <rect x="240" y="40" width="330" height="14" fill="#0E2E26"/>
+
+  <!-- right wing -->
+  <rect x="580" y="200" width="150" height="400" fill="#E2D9CA"/>
+  <g fill="url(#tGlass)" opacity=".9">
+    <rect x="596" y="226" width="118" height="42"/><rect x="596" y="290" width="118" height="42"/>
+    <rect x="596" y="354" width="118" height="42"/><rect x="596" y="418" width="118" height="42"/>
+    <rect x="596" y="482" width="118" height="42"/>
+  </g>
+  <rect x="580" y="200" width="150" height="10" fill="#A87F38" opacity=".5"/>
+
+  <!-- ground -->
+  <rect y="560" width="800" height="40" fill="#0A211B"/>
+  <g fill="#143F34">
+    <circle cx="70" cy="560" r="34"/><circle cx="120" cy="568" r="26"/>
+    <circle cx="740" cy="558" r="32"/><circle cx="700" cy="566" r="22"/>
+  </g>
+</svg>

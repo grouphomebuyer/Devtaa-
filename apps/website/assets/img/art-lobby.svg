@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration of a double-height entrance lobby">
+  <defs>
+    <linearGradient id="lWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E2E26"/>
+      <stop offset="100%" stop-color="#1C5344"/>
+    </linearGradient>
+    <linearGradient id="lStone" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F1EBE1"/>
+      <stop offset="100%" stop-color="#C9B79C"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#lWall)"/>
+
+  <!-- back-lit feature wall -->
+  <rect x="90" y="60" width="620" height="420" fill="url(#lStone)" opacity=".92"/>
+  <g fill="#0E2E26" opacity=".12">
+    <rect x="90" y="60" width="12" height="420"/><rect x="170" y="60" width="12" height="420"/>
+    <rect x="250" y="60" width="12" height="420"/><rect x="330" y="60" width="12" height="420"/>
+    <rect x="410" y="60" width="12" height="420"/><rect x="490" y="60" width="12" height="420"/>
+    <rect x="570" y="60" width="12" height="420"/><rect x="650" y="60" width="12" height="420"/>
+  </g>
+  <rect x="90" y="60" width="620" height="16" fill="#C6A15B"/>
+  <rect x="90" y="464" width="620" height="16" fill="#C6A15B"/>
+
+  <!-- arch opening -->
+  <path d="M300 480V260a100 100 0 0 1 200 0v220z" fill="#14453A"/>
+  <path d="M300 480V260a100 100 0 0 1 200 0v220z" fill="none" stroke="#DCBE83" stroke-width="6"/>
+  <rect x="396" y="260" width="8" height="220" fill="#DCBE83" opacity=".5"/>
+
+  <!-- reception desk -->
+  <rect x="120" y="380" width="150" height="100" rx="6" fill="#0A211B"/>
+  <rect x="120" y="370" width="150" height="16" rx="4" fill="#C6A15B"/>
+  <rect x="530" y="380" width="150" height="100" rx="6" fill="#0A211B"/>
+  <rect x="530" y="370" width="150" height="16" rx="4" fill="#C6A15B"/>
+
+  <!-- floor with reflection -->
+  <rect y="480" width="800" height="120" fill="#1A2E28"/>
+  <g opacity=".22">
+    <rect x="300" y="480" width="200" height="90" fill="#DCBE83"/>
+    <rect x="120" y="480" width="150" height="60" fill="#C6A15B"/>
+    <rect x="530" y="480" width="150" height="60" fill="#C6A15B"/>
+  </g>
+  <path d="M0 480h800" stroke="#C6A15B" stroke-width="3" opacity=".6"/>
+
+  <!-- chandeliers -->
+  <g fill="#DCBE83">
+    <rect x="230" y="60" width="3" height="90"/><circle cx="231" cy="160" r="14"/>
+    <rect x="400" y="60" width="3" height="60"/><circle cx="401" cy="132" r="18"/>
+    <rect x="570" y="60" width="3" height="90"/><circle cx="571" cy="160" r="14"/>
+  </g>
+  <!-- planters -->
+  <g>
+    <rect x="286" y="430" width="34" height="50" rx="5" fill="#8A6E44"/>
+    <path d="M303 430c-24-10-30-38-22-60 20 8 30 30 28 50 6-24 22-42 44-46 4 26-16 50-50 56z" fill="#2A6F5C"/>
+    <rect x="480" y="430" width="34" height="50" rx="5" fill="#8A6E44"/>
+    <path d="M497 430c-24-10-30-38-22-60 20 8 30 30 28 50 6-24 22-42 44-46 4 26-16 50-50 56z" fill="#2A6F5C"/>
+  </g>
+</svg>

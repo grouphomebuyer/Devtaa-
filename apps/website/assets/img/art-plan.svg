@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Indicative floor plan layout">
+  <rect width="800" height="600" fill="#FBF9F5"/>
+  <g stroke="#E2D9CA" stroke-width="1">
+    <path d="M0 40h800M0 80h800M0 120h800M0 160h800M0 200h800M0 240h800M0 280h800M0 320h800M0 360h800M0 400h800M0 440h800M0 480h800M0 520h800M0 560h800"/>
+    <path d="M40 0v600M80 0v600M120 0v600M160 0v600M200 0v600M240 0v600M280 0v600M320 0v600M360 0v600M400 0v600M440 0v600M480 0v600M520 0v600M560 0v600M600 0v600M640 0v600M680 0v600M720 0v600M760 0v600"/>
+  </g>
+
+  <g fill="none" stroke="#0E2E26" stroke-width="7">
+    <rect x="90" y="80" width="620" height="440"/>
+  </g>
+  <g fill="#F1EBE1" stroke="#0E2E26" stroke-width="4">
+    <rect x="118" y="108" width="250" height="200"/>
+    <rect x="392" y="108" width="290" height="130"/>
+    <rect x="392" y="262" width="290" height="230"/>
+    <rect x="118" y="332" width="250" height="160"/>
+  </g>
+
+  <!-- balcony -->
+  <g fill="none" stroke="#C6A15B" stroke-width="4" stroke-dasharray="10 7">
+    <rect x="118" y="332" width="250" height="160"/>
+  </g>
+
+  <!-- fixtures -->
+  <g fill="#C6A15B" opacity=".55">
+    <rect x="150" y="150" width="120" height="70" rx="6"/>
+    <circle cx="620" cy="330" r="26"/>
+    <rect x="430" y="150" width="90" height="50" rx="4"/>
+    <rect x="430" y="300" width="130" height="60" rx="6"/>
+  </g>
+
+  <!-- door swings -->
+  <g fill="none" stroke="#0E2E26" stroke-width="3">
+    <path d="M368 200a40 40 0 0 1 40 40"/>
+    <path d="M368 400a40 40 0 0 1 40 40"/>
+    <path d="M540 238a38 38 0 0 1-38 38"/>
+  </g>
+
+  <!-- dimension lines -->
+  <g stroke="#7C8781" stroke-width="2" fill="none">
+    <path d="M90 550h620M90 542v16M710 542v16"/>
+    <path d="M50 80v440M42 80h16M42 520h16"/>
+  </g>
+  <g font-family="Jost, sans-serif" font-size="17" fill="#4E5A55" letter-spacing="1.5">
+    <text x="400" y="578" text-anchor="middle">INDICATIVE LAYOUT</text>
+    <text x="152" y="140" font-size="14">LIVING / DINING</text>
+    <text x="424" y="140" font-size="14">BEDROOM 01</text>
+    <text x="424" y="294" font-size="14">MASTER BEDROOM</text>
+    <text x="152" y="364" font-size="14">BALCONY</text>
+  </g>
+</svg>

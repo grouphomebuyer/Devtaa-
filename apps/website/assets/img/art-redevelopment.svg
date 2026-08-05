@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration contrasting an ageing society building with a new redeveloped tower">
+  <defs>
+    <linearGradient id="rSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E2E26"/>
+      <stop offset="100%" stop-color="#5E8C79"/>
+    </linearGradient>
+    <linearGradient id="rNew" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FBF9F5"/>
+      <stop offset="100%" stop-color="#D3C9B7"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#rSky)"/>
+  <circle cx="700" cy="110" r="64" fill="#F3E8D2" opacity=".3"/>
+
+  <!-- old low-rise (left, muted) -->
+  <g opacity=".65">
+    <rect x="60" y="320" width="220" height="240" fill="#6E7B72"/>
+    <g fill="#4A554E">
+      <rect x="80" y="345" width="44" height="34"/><rect x="140" y="345" width="44" height="34"/><rect x="200" y="345" width="44" height="34"/>
+      <rect x="80" y="400" width="44" height="34"/><rect x="140" y="400" width="44" height="34"/><rect x="200" y="400" width="44" height="34"/>
+      <rect x="80" y="455" width="44" height="34"/><rect x="140" y="455" width="44" height="34"/><rect x="200" y="455" width="44" height="34"/>
+    </g>
+    <rect x="150" y="505" width="44" height="55" fill="#3B443E"/>
+    <rect x="55" y="310" width="230" height="14" fill="#5C665F"/>
+    <path d="M60 340h220" stroke="#8A9490" stroke-width="3" opacity=".6"/>
+  </g>
+
+  <!-- arrow -->
+  <g transform="translate(322 420)">
+    <path d="M0 0h68" stroke="#DCBE83" stroke-width="7" stroke-linecap="round"/>
+    <path d="M60-13l22 13-22 13z" fill="#DCBE83"/>
+  </g>
+
+  <!-- new tower (right) -->
+  <rect x="430" y="120" width="230" height="440" fill="url(#rNew)"/>
+  <g fill="#1C5344">
+    <rect x="450" y="150" width="86" height="42"/><rect x="554" y="150" width="86" height="42"/>
+    <rect x="450" y="212" width="86" height="42"/><rect x="554" y="212" width="86" height="42"/>
+    <rect x="450" y="274" width="86" height="42"/><rect x="554" y="274" width="86" height="42"/>
+    <rect x="450" y="336" width="86" height="42"/><rect x="554" y="336" width="86" height="42"/>
+    <rect x="450" y="398" width="86" height="42"/><rect x="554" y="398" width="86" height="42"/>
+    <rect x="450" y="460" width="86" height="42"/><rect x="554" y="460" width="86" height="42"/>
+  </g>
+  <g fill="#A87F38" opacity=".55">
+    <rect x="430" y="198" width="230" height="8"/><rect x="430" y="260" width="230" height="8"/>
+    <rect x="430" y="322" width="230" height="8"/><rect x="430" y="384" width="230" height="8"/>
+    <rect x="430" y="446" width="230" height="8"/>
+  </g>
+  <rect x="538" y="120" width="12" height="440" fill="#FBF9F5"/>
+  <rect x="430" y="120" width="230" height="14" fill="#0E2E26"/>
+  <rect x="670" y="250" width="90" height="310" fill="#E2D9CA"/>
+  <g fill="#1C5344" opacity=".85">
+    <rect x="686" y="274" width="58" height="34"/><rect x="686" y="330" width="58" height="34"/>
+    <rect x="686" y="386" width="58" height="34"/><rect x="686" y="442" width="58" height="34"/>
+  </g>
+
+  <!-- ground -->
+  <rect y="556" width="800" height="44" fill="#0A211B"/>
+  <g fill="#143F34">
+    <circle cx="340" cy="556" r="28"/><circle cx="380" cy="562" r="20"/>
+    <circle cx="770" cy="554" r="26"/>
+  </g>
+</svg>

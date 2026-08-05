@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Indicative location and connectivity map">
+  <rect width="800" height="600" fill="#EFEAE0"/>
+  <!-- green belts -->
+  <path d="M0 0h240v150H0z" fill="#D7E3D4"/>
+  <path d="M600 420h200v180H600z" fill="#D7E3D4"/>
+  <circle cx="120" cy="470" r="90" fill="#CFE0D8"/>
+
+  <!-- water -->
+  <path d="M0 520q150-60 300-20t500-30v130H0z" fill="#BFD8D0"/>
+
+  <!-- roads -->
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
+    <path d="M-20 300h840" stroke-width="30"/>
+    <path d="M400 -20v640" stroke-width="24"/>
+    <path d="M60 60L740 560" stroke-width="14"/>
+    <path d="M120 600V180h560" stroke-width="12"/>
+  </g>
+  <g stroke="#DCBE83" stroke-width="4" stroke-dasharray="16 14" fill="none">
+    <path d="M-20 300h840"/>
+    <path d="M400 -20v640"/>
+  </g>
+
+  <!-- rail line -->
+  <g>
+    <path d="M0 180h800" stroke="#7C8781" stroke-width="8"/>
+    <path d="M0 180h800" stroke="#FBF9F5" stroke-width="3" stroke-dasharray="6 14"/>
+  </g>
+
+  <!-- POI pins -->
+  <g>
+    <g transform="translate(390 280)">
+      <path d="M0-44c-17 0-30 13-30 30 0 22 30 50 30 50s30-28 30-50c0-17-13-30-30-30z" fill="#A87F38"/>
+      <circle cy="-14" r="12" fill="#FBF9F5"/>
+    </g>
+    <g fill="#14453A">
+      <circle cx="180" cy="180" r="11"/><circle cx="640" cy="300" r="11"/>
+      <circle cx="250" cy="430" r="11"/><circle cx="560" cy="120" r="11"/>
+    </g>
+    <g font-family="Jost, sans-serif" font-size="15" fill="#4E5A55">
+      <text x="198" y="172">Railway Station</text>
+      <text x="658" y="294">Expressway</text>
+      <text x="268" y="424">School</text>
+      <text x="578" y="114">Hospital</text>
+      <text x="428" y="252" font-size="17" fill="#0E2E26" font-weight="600">Devtaa</text>
+    </g>
+  </g>
+
+  <!-- compass -->
+  <g transform="translate(720 90)">
+    <circle r="34" fill="#FBF9F5" stroke="#E2D9CA" stroke-width="2"/>
+    <path d="M0-24l9 24-9-7-9 7z" fill="#A87F38"/>
+    <text y="-30" text-anchor="middle" font-family="Jost, sans-serif" font-size="13" fill="#4E5A55">N</text>
+  </g>
+</svg>

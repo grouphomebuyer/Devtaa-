@@ -1,0 +1,11 @@
+{
+  "name": "@devtaa/website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Marketing website for Devtaa Developers Pvt. Ltd.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && npx --yes serve@14 -l 8080 ."
+  }
+}
