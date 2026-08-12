@@ -1,0 +1,1269 @@
+openapi: 3.1.0
+info:
+  title: AI-COS — AI Construction Operating System API
+  version: 1.0.0
+  description: |
+    Reference API contract for AI-COS (Phase 7 — see `docs/07-api-design.md`).
+
+    This document specifies the Wave 1 surface: authentication, approvals,
+    procurement, inventory, finance (payables, payments, bank reconciliation),
+    society/member obligations, and mobile sync. Later waves extend it
+    additively within `/v1`.
+
+    Conventions:
+      * Monetary values are JSON **strings** holding decimals ("425000.0000").
+      * All mutating requests require an `Idempotency-Key`.
+      * Collections use keyset (cursor) pagination — never offset.
+      * `404` is returned both for "not found" and "not visible under row-level
+        security", deliberately indistinguishable.
+  contact:
+    name: AI-COS Platform Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.aicos.in/v1
+    description: Production
+  - url: https://staging-api.aicos.in/v1
+    description: Staging
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Approvals
+  - name: Procurement
+  - name: Inventory
+  - name: Finance
+  - name: Banking
+  - name: Members
+  - name: Sync
+  - name: Jobs
+  - name: Connector
+
+paths:
+  # ---------------------------------------------------------------- Auth ----
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Authenticated, or MFA challenge required
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/mfa/verify:
+    post:
+      tags: [Auth]
+      summary: Complete an MFA challenge
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [mfa_token, code]
+              properties:
+                mfa_token: { type: string }
+                code: { type: string, pattern: '^[0-9]{6}$' }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Current user, scopes and effective permissions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/CurrentUser' }
+
+  # ----------------------------------------------------------- Approvals ----
+  /approvals/inbox:
+    get:
+      tags: [Approvals]
+      summary: Documents awaiting the caller's approval
+      parameters:
+        - { in: query, name: document_type, schema: { type: string } }
+        - { in: query, name: project_id, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ApprovalCard' }
+                  meta: { $ref: '#/components/schemas/CollectionMeta' }
+
+  /approvals/{id}/approve:
+    post:
+      tags: [Approvals]
+      summary: Approve the current step of a document
+      description: |
+        Requires a step-up authentication token. The document's `content_hash`
+        must match the value the approver was shown; if the document changed
+        after it was presented, the call fails with `409 DOCUMENT_CHANGED` and
+        prior approvals are invalidated.
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/StepUpToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [content_hash]
+              properties:
+                content_hash: { type: string }
+                remarks: { type: string, maxLength: 2000 }
+                on_behalf_of: { type: string, format: uuid, description: Delegation }
+      responses:
+        '200':
+          description: Approved (or advanced to the next step)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ApprovalInstance' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  /approvals/{id}/reject:
+    post:
+      tags: [Approvals]
+      summary: Reject a document (reason mandatory)
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/StepUpToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [remarks]
+              properties:
+                remarks: { type: string, minLength: 5, maxLength: 2000 }
+      responses:
+        '200':
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ApprovalInstance' }
+
+  # --------------------------------------------------------- Procurement ----
+  /purchase-requisitions:
+    get:
+      tags: [Procurement]
+      summary: List purchase requisitions
+      parameters:
+        - { in: query, name: project_id, schema: { type: string, format: uuid } }
+        - { in: query, name: status, schema: { $ref: '#/components/schemas/PrStatus' } }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/PurchaseRequisition' }
+                  meta: { $ref: '#/components/schemas/CollectionMeta' }
+    post:
+      tags: [Procurement]
+      summary: Create a purchase requisition
+      description: |
+        Offline-capable: the client may supply `id` (UUID v7) so that retries
+        are idempotent by construction. Budget availability is evaluated at
+        creation (warning) and again at final approval (blocking, rule BR-001).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PurchaseRequisitionCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PurchaseRequisition' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  /purchase-requisitions/{id}/submit:
+    post:
+      tags: [Procurement]
+      summary: Submit for approval
+      description: |
+        Allocates the document number, resolves and freezes the delegation-of-
+        authority chain, and stores the content hash.
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PurchaseRequisition' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+        '423': { $ref: '#/components/responses/Locked' }
+
+  /purchase-orders:
+    post:
+      tags: [Procurement]
+      summary: Create a purchase order from approved requisition lines
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PurchaseOrderCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PurchaseOrder' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  /boq-lines/{id}/budget-availability:
+    get:
+      tags: [Procurement]
+      summary: Live budget position for a BOQ line
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/BudgetAvailability' }
+
+  # ----------------------------------------------------------- Inventory ----
+  /goods-receipts:
+    post:
+      tags: [Inventory]
+      summary: Record a goods receipt against a purchase order
+      description: |
+        Offline-capable. Accepted + rejected + short quantities must equal the
+        challan quantity. Posting a receipt writes to the append-only stock
+        ledger; the materialised balance is maintained by a database trigger
+        that makes negative stock impossible.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GoodsReceiptCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/GoodsReceipt' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  /stock/balances:
+    get:
+      tags: [Inventory]
+      summary: Current stock balances
+      parameters:
+        - { in: query, name: project_id, schema: { type: string, format: uuid } }
+        - { in: query, name: store_id, schema: { type: string, format: uuid } }
+        - { in: query, name: item_id, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/StockBalance' }
+                  meta: { $ref: '#/components/schemas/CollectionMeta' }
+
+  # ------------------------------------------------------------- Finance ----
+  /purchase-invoices/from-document:
+    post:
+      tags: [Finance]
+      summary: Draft a purchase invoice from an uploaded document using AI extraction
+      description: |
+        Returns a **draft** invoice with per-field confidence scores and source
+        citations (page and bounding box), plus the three-way match result.
+        Nothing is posted: a human must review and book it. This endpoint is
+        also the AI runtime's only invoice-related tool, and it cannot post.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [document_id]
+              properties:
+                document_id: { type: string, format: uuid }
+                purchase_order_id: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Draft produced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ExtractedInvoice' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
+
+  /payment-requests:
+    post:
+      tags: [Finance]
+      summary: Create a payment request
+      description: |
+        Net amount is computed by the server as
+        `gross − TDS − retention − advance adjusted − other deductions`
+        and can never be supplied by the client. Beneficiary bank details are
+        taken from the verified vendor master only (rule BR-PAY-06).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentRequestCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PaymentRequest' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  /payment-runs/{id}/bank-file:
+    get:
+      tags: [Finance]
+      summary: Generate the bank payment file for an approved run
+      description: Returns a single-use, expiring signed URL. Every download is audited.
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+        - in: query
+          name: format
+          required: true
+          schema:
+            type: string
+            enum: [hdfc_neft, icici_h2h, sbi_bulk, axis_neft, generic_csv]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      url: { type: string, format: uri }
+                      expires_at: { type: string, format: date-time }
+                      sha256: { type: string }
+                      record_count: { type: integer }
+                      total_amount: { $ref: '#/components/schemas/Money' }
+        '423': { $ref: '#/components/responses/Locked' }
+
+  # ------------------------------------------------------------- Banking ----
+  /bank-accounts/{id}/statements/upload:
+    post:
+      tags: [Banking]
+      summary: Ingest a bank statement (async)
+      description: |
+        Accepts CSV, XLS, MT940 or PDF (parsed by OCR plus a language model).
+        Ingestion is rejected if the opening balance does not continue from the
+        previous statement's closing balance (rule BR-BNK-02).
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [document_id, source]
+              properties:
+                document_id: { type: string, format: uuid }
+                source:
+                  type: string
+                  enum: [UPLOAD_CSV, UPLOAD_PDF, EMAIL, MT940, ACCOUNT_AGGREGATOR]
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Job' }
+
+  /reconciliation/suggestions:
+    get:
+      tags: [Banking]
+      summary: Ranked match candidates for an unmatched statement line
+      parameters:
+        - { in: query, name: line_id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/MatchSuggestion' }
+
+  /reconciliation/matches:
+    post:
+      tags: [Banking]
+      summary: Confirm a match between a statement line and one or more vouchers
+      description: The matched amounts must tie exactly to the statement line amount.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [bank_statement_line_id, allocations]
+              properties:
+                bank_statement_line_id: { type: string, format: uuid }
+                allocations:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [reference_type, reference_id, amount]
+                    properties:
+                      reference_type:
+                        type: string
+                        enum: [payment_voucher, receipt, journal]
+                      reference_id: { type: string, format: uuid }
+                      amount: { $ref: '#/components/schemas/Money' }
+      responses:
+        '201':
+          description: Matched
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+
+  # ------------------------------------------------------------- Members ----
+  /obligation-runs:
+    post:
+      tags: [Members]
+      summary: Assemble the monthly member disbursement run (rent, corpus, shifting)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [project_id, run_month]
+              properties:
+                project_id: { type: string, format: uuid }
+                run_month: { type: string, format: date, description: First day of the month }
+                exclude_member_ids:
+                  type: array
+                  items: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Draft run created with exceptions listed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ObligationRun' }
+
+  # ---------------------------------------------------------------- Sync ----
+  /sync/batch:
+    post:
+      tags: [Sync]
+      summary: Drain the mobile offline mutation queue
+      description: |
+        Partial success by design — one rejected record never fails the batch.
+        Each mutation carries a client-generated UUID; the server upserts on it,
+        so retries are safe. Conflicts are returned for explicit resolution;
+        last-write-wins is never applied.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [mutations]
+              properties:
+                device_id: { type: string }
+                mutations:
+                  type: array
+                  minItems: 1
+                  maxItems: 500
+                  items: { $ref: '#/components/schemas/SyncMutation' }
+      responses:
+        '200':
+          description: Per-item results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items: { $ref: '#/components/schemas/SyncResult' }
+                      server_time: { type: string, format: date-time }
+                      clock_skew_seconds: { type: integer }
+
+  /sync/changes:
+    get:
+      tags: [Sync]
+      summary: Pull reference-data changes since a cursor
+      parameters:
+        - { in: query, name: since, schema: { type: string } }
+        - in: query
+          name: entities
+          schema: { type: string, example: item,vendor,boq_line,purchase_order }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      changes: { type: array, items: { type: object } }
+                      next_cursor: { type: string }
+                      full_resync_required: { type: boolean }
+
+  # ---------------------------------------------------------------- Jobs ----
+  /jobs/{id}:
+    get:
+      tags: [Jobs]
+      summary: Poll an asynchronous job
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Job' }
+
+  # ----------------------------------------------------------- Connector ----
+  /connector/tally/queue:
+    get:
+      tags: [Connector]
+      summary: Fetch pending Tally vouchers (outbound-only agent, mTLS)
+      description: |
+        The connector runs on a Windows host on the client's LAN and always
+        initiates the connection; no inbound port is opened at the client site.
+        Each item carries a durable `remote_id` so a re-push updates the Tally
+        voucher rather than duplicating it.
+      security:
+        - mtlsConnector: []
+      parameters:
+        - { in: query, name: limit, schema: { type: integer, default: 50, maximum: 200 } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/TallyQueueItem' }
+
+  /connector/tally/ack:
+    post:
+      tags: [Connector]
+      summary: Acknowledge Tally sync results
+      security:
+        - mtlsConnector: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [id, status]
+                    properties:
+                      id: { type: string, format: uuid }
+                      status: { type: string, enum: [SYNCED, FAILED, SKIPPED] }
+                      tally_guid: { type: string }
+                      error_code:
+                        type: string
+                        enum: [LEDGER_NOT_FOUND, PERIOD_LOCKED, DUPLICATE, TALLY_OFFLINE, PARSE_ERROR]
+                      error_message: { type: string }
+      responses:
+        '200': { description: Acknowledged }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    mtlsConnector:
+      type: mutualTLS
+
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Cursor:
+      name: cursor
+      in: query
+      description: Keyset pagination cursor from `meta.next_cursor`
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, default: 50, minimum: 1, maximum: 200 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated key; the same key with the same body replays the original response.
+      schema: { type: string, minLength: 8, maxLength: 128 }
+    StepUpToken:
+      name: X-Step-Up-Token
+      in: header
+      required: true
+      description: Short-lived token proving recent re-authentication (required for financial approvals).
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Authenticated but not permitted
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: Optimistic-lock conflict or disallowed state transition
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    BusinessRuleViolation:
+      description: A business rule blocked the operation; `rule_code` identifies it
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Locked:
+      description: Financial period closed, or document frozen pending approval
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    DependencyUnavailable:
+      description: An external dependency (AI, GSP, Tally) is unavailable; core flows remain usable
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    Money:
+      type: string
+      pattern: '^-?[0-9]{1,14}(\.[0-9]{1,4})?$'
+      description: Decimal string, 4 dp. Never a JSON number — precision must not be lost.
+      example: '425000.0000'
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, trace_id]
+          properties:
+            code: { type: string, example: BUDGET_EXCEEDED }
+            message: { type: string }
+            rule_code: { type: string, example: BR-001 }
+            details: { type: object, additionalProperties: true }
+            field_errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  code: { type: string }
+                  message: { type: string }
+            trace_id: { type: string }
+
+    CollectionMeta:
+      type: object
+      properties:
+        count: { type: integer }
+        has_more: { type: boolean }
+        next_cursor: { type: string, nullable: true }
+
+    AuthResult:
+      type: object
+      properties:
+        access_token: { type: string, nullable: true }
+        refresh_token: { type: string, nullable: true }
+        expires_in: { type: integer, example: 900 }
+        mfa_required: { type: boolean }
+        mfa_token: { type: string, nullable: true }
+
+    CurrentUser:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        full_name: { type: string }
+        email: { type: string }
+        locale: { type: string, enum: [en-IN, hi-IN, mr-IN] }
+        companies:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              name: { type: string }
+        projects:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              code: { type: string }
+              name: { type: string }
+        permissions:
+          type: array
+          items: { type: string, example: purchase_order.approve }
+
+    ApprovalCard:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_type: { type: string, example: payment_request }
+        document_id: { type: string, format: uuid }
+        document_no: { type: string }
+        project_name: { type: string }
+        payee_name: { type: string }
+        amount: { $ref: '#/components/schemas/Money' }
+        content_hash: { type: string }
+        submitted_at: { type: string, format: date-time }
+        age_hours: { type: number }
+        sequence: { type: integer }
+        ai_summary:
+          type: object
+          nullable: true
+          description: Advisory only; generated with the approver's own data scope.
+          properties:
+            text: { type: string }
+            flags:
+              type: array
+              items: { type: string, example: RATE_ABOVE_LAST_PURCHASE }
+            confidence: { type: number, format: float }
+        budget_impact: { $ref: '#/components/schemas/BudgetAvailability' }
+
+    ApprovalInstance:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, APPROVED, REJECTED, RETURNED, CANCELLED] }
+        current_step: { type: integer }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              sequence: { type: integer }
+              approver_name: { type: string }
+              status: { type: string }
+              acted_at: { type: string, format: date-time, nullable: true }
+              remarks: { type: string, nullable: true }
+
+    BudgetAvailability:
+      type: object
+      properties:
+        boq_line_id: { type: string, format: uuid, nullable: true }
+        cost_head_id: { type: string, format: uuid }
+        budget_amount: { $ref: '#/components/schemas/Money' }
+        committed_amount: { $ref: '#/components/schemas/Money' }
+        incurred_amount: { $ref: '#/components/schemas/Money' }
+        available_amount: { $ref: '#/components/schemas/Money' }
+        consumed_pct: { type: number, format: float }
+        state: { type: string, enum: [WITHIN, NEAR_LIMIT, BREACH] }
+
+    PrStatus:
+      type: string
+      enum: [DRAFT, PENDING_APPROVAL, APPROVED, PARTIALLY_ORDERED, ORDERED, RETURNED, REJECTED, CANCELLED, CLOSED]
+
+    PurchaseRequisitionCreate:
+      type: object
+      additionalProperties: false
+      required: [project_id, required_by, lines]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-generated (UUID v7) for offline idempotency.
+        project_id: { type: string, format: uuid }
+        required_by: { type: string, format: date }
+        priority: { type: string, enum: [LOW, NORMAL, HIGH, URGENT], default: NORMAL }
+        purpose: { type: string, maxLength: 500 }
+        captured_at: { type: string, format: date-time, description: Device capture time (offline) }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: object
+            additionalProperties: false
+            required: [description, cost_head_id, uom, quantity]
+            properties:
+              item_id: { type: string, format: uuid }
+              description: { type: string, maxLength: 500 }
+              boq_line_id: { type: string, format: uuid }
+              cost_head_id: { type: string, format: uuid }
+              wbs_node_id: { type: string, format: uuid }
+              uom: { type: string }
+              quantity: { type: string, pattern: '^[0-9]{1,14}(\.[0-9]{1,4})?$' }
+              estimated_rate: { $ref: '#/components/schemas/Money' }
+              required_by: { type: string, format: date }
+              remarks: { type: string }
+
+    PurchaseRequisition:
+      allOf:
+        - $ref: '#/components/schemas/PurchaseRequisitionCreate'
+        - type: object
+          properties:
+            document_no: { type: string, nullable: true }
+            status: { $ref: '#/components/schemas/PrStatus' }
+            total_estimated_amount: { $ref: '#/components/schemas/Money' }
+            budget_state: { type: string, enum: [WITHIN, BREACH], nullable: true }
+            approval_instance_id: { type: string, format: uuid, nullable: true }
+            version: { type: integer }
+            created_at: { type: string, format: date-time }
+
+    PurchaseOrderCreate:
+      type: object
+      additionalProperties: false
+      required: [project_id, vendor_id, lines]
+      properties:
+        project_id: { type: string, format: uuid }
+        vendor_id: { type: string, format: uuid }
+        vendor_gstin_id: { type: string, format: uuid }
+        delivery_store_id: { type: string, format: uuid }
+        delivery_date: { type: string, format: date }
+        payment_terms_days: { type: integer, minimum: 0, maximum: 365, default: 30 }
+        advance_pct: { type: number, minimum: 0, maximum: 100, default: 0 }
+        retention_pct: { type: number, minimum: 0, maximum: 20, default: 0 }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [description, cost_head_id, uom, quantity, rate]
+            properties:
+              purchase_requisition_line_id: { type: string, format: uuid }
+              item_id: { type: string, format: uuid }
+              description: { type: string }
+              hsn_sac: { type: string }
+              cost_head_id: { type: string, format: uuid }
+              boq_line_id: { type: string, format: uuid }
+              uom: { type: string }
+              quantity: { type: string }
+              rate: { $ref: '#/components/schemas/Money' }
+              tax_code: { type: string, example: GST18 }
+              tolerance_pct: { type: number, default: 2 }
+
+    PurchaseOrder:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_no: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [DRAFT, PENDING_APPROVAL, APPROVED, DISPATCHED, ACKNOWLEDGED,
+                 PARTIALLY_RECEIVED, RECEIVED, SHORT_CLOSED, CLOSED, REJECTED, CANCELLED]
+        vendor_id: { type: string, format: uuid }
+        project_id: { type: string, format: uuid }
+        taxable_amount: { $ref: '#/components/schemas/Money' }
+        tax_amount: { $ref: '#/components/schemas/Money' }
+        total_amount: { $ref: '#/components/schemas/Money' }
+        amendment_no: { type: integer }
+        version: { type: integer }
+
+    GoodsReceiptCreate:
+      type: object
+      additionalProperties: false
+      required: [project_id, store_id, vendor_id, challan_no, challan_date, lines]
+      properties:
+        id: { type: string, format: uuid }
+        project_id: { type: string, format: uuid }
+        store_id: { type: string, format: uuid }
+        vendor_id: { type: string, format: uuid }
+        purchase_order_id: { type: string, format: uuid }
+        challan_no: { type: string }
+        challan_date: { type: string, format: date }
+        vehicle_no: { type: string }
+        captured_at: { type: string, format: date-time }
+        document_ids:
+          type: array
+          description: Challan photos already uploaded to object storage.
+          items: { type: string, format: uuid }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [item_id, uom, challan_quantity, accepted_quantity]
+            properties:
+              purchase_order_line_id: { type: string, format: uuid }
+              item_id: { type: string, format: uuid }
+              batch_no: { type: string }
+              heat_no: { type: string, description: Steel traceability }
+              uom: { type: string }
+              challan_quantity: { type: string }
+              accepted_quantity: { type: string }
+              rejected_quantity: { type: string, default: '0' }
+              short_quantity: { type: string, default: '0' }
+              rejection_reason: { type: string }
+
+    GoodsReceipt:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_no: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [DRAFT, PENDING_INSPECTION, ACCEPTED, PARTIALLY_REJECTED, REJECTED, CANCELLED]
+        version: { type: integer }
+
+    StockBalance:
+      type: object
+      properties:
+        project_id: { type: string, format: uuid }
+        store_id: { type: string, format: uuid }
+        item_id: { type: string, format: uuid }
+        item_name: { type: string }
+        batch_no: { type: string }
+        quantity: { type: string }
+        uom: { type: string }
+        value: { $ref: '#/components/schemas/Money' }
+        avg_rate: { $ref: '#/components/schemas/Money' }
+        last_movement_at: { type: string, format: date-time, nullable: true }
+
+    ExtractedField:
+      type: object
+      properties:
+        value: { type: string, nullable: true }
+        confidence: { type: number, format: float, minimum: 0, maximum: 1 }
+        source_ref:
+          type: object
+          nullable: true
+          properties:
+            page: { type: integer }
+            bbox:
+              type: array
+              minItems: 4
+              maxItems: 4
+              items: { type: number }
+
+    ExtractedInvoice:
+      type: object
+      properties:
+        extraction_id: { type: string, format: uuid }
+        model: { type: string }
+        prompt_version: { type: string }
+        overall_confidence: { type: number, format: float }
+        fields:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/ExtractedField' }
+        match_result:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [MATCHED, QTY_MISMATCH, RATE_MISMATCH, NO_GRN, NOT_APPLICABLE]
+            differences:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  po_value: { type: string }
+                  grn_value: { type: string }
+                  invoice_value: { type: string }
+        duplicate_candidates:
+          type: array
+          items:
+            type: object
+            properties:
+              purchase_invoice_id: { type: string, format: uuid }
+              invoice_no: { type: string }
+              amount: { $ref: '#/components/schemas/Money' }
+              similarity: { type: number, format: float }
+
+    PaymentRequestCreate:
+      type: object
+      additionalProperties: false
+      required: [company_id, request_type, payee_type, gross_amount, purpose, lines]
+      properties:
+        company_id: { type: string, format: uuid }
+        project_id: { type: string, format: uuid }
+        request_type:
+          type: string
+          enum: [VENDOR_INVOICE, RA_BILL, ADVANCE, MEMBER_OBLIGATION, STATUTORY,
+                 PETTY_CASH, SALARY, EXPENSE_CLAIM, OTHER]
+        payee_type: { type: string, enum: [VENDOR, MEMBER, EMPLOYEE, STATUTORY, OTHER] }
+        payee_id: { type: string, format: uuid }
+        payee_bank_account_id:
+          type: string
+          format: uuid
+          description: Must be a verified account past its cooling period (BR-PAY-06, BR-008).
+        gross_amount: { $ref: '#/components/schemas/Money' }
+        due_date: { type: string, format: date }
+        priority: { type: string, enum: [LOW, NORMAL, HIGH, URGENT], default: NORMAL }
+        purpose: { type: string, minLength: 5, maxLength: 500 }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [reference_type, reference_id, amount]
+            properties:
+              reference_type: { type: string, enum: [purchase_invoice, ra_bill, member_obligation, advance] }
+              reference_id: { type: string, format: uuid }
+              amount: { $ref: '#/components/schemas/Money' }
+
+    PaymentRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_no: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [DRAFT, PENDING_APPROVAL, APPROVED, IN_PAYMENT_RUN, PAID, RETURNED, REJECTED, CANCELLED]
+        gross_amount: { $ref: '#/components/schemas/Money' }
+        tds_amount: { $ref: '#/components/schemas/Money' }
+        retention_amount: { $ref: '#/components/schemas/Money' }
+        advance_adjusted: { $ref: '#/components/schemas/Money' }
+        net_amount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: Server-computed; never accepted from the client.
+        duplicate_flag: { type: boolean }
+        version: { type: integer }
+
+    MatchSuggestion:
+      type: object
+      properties:
+        reference_type: { type: string, enum: [payment_voucher, receipt, journal] }
+        reference_id: { type: string, format: uuid }
+        document_no: { type: string }
+        party_name: { type: string }
+        amount: { $ref: '#/components/schemas/Money' }
+        confidence: { type: number, format: float }
+        reasons:
+          type: array
+          description: Human-readable evidence for the suggestion.
+          items: { type: string, example: 'UTR matches voucher reference' }
+
+    ObligationRun:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        document_no: { type: string, nullable: true }
+        run_month: { type: string, format: date }
+        member_count: { type: integer }
+        gross_total: { $ref: '#/components/schemas/Money' }
+        tds_total: { $ref: '#/components/schemas/Money' }
+        net_total: { $ref: '#/components/schemas/Money' }
+        status: { type: string, enum: [DRAFT, PENDING_APPROVAL, APPROVED, PAID, CANCELLED] }
+        exceptions:
+          type: array
+          items:
+            type: object
+            properties:
+              member_id: { type: string, format: uuid }
+              flat_no: { type: string }
+              code:
+                type: string
+                enum: [BANK_DETAILS_MISSING, AGREEMENT_NOT_EXECUTED, PAN_MISSING, MEMBER_ON_HOLD]
+              message: { type: string }
+
+    SyncMutation:
+      type: object
+      additionalProperties: false
+      required: [client_id, entity, op, payload]
+      properties:
+        client_id: { type: string, format: uuid }
+        entity:
+          type: string
+          enum: [dpr, goods_receipt, material_issue, measurement, purchase_requisition, attendance]
+        op: { type: string, enum: [create, update] }
+        base_version: { type: integer, description: Server version the device last saw }
+        captured_at: { type: string, format: date-time }
+        payload: { type: object, additionalProperties: true }
+
+    SyncResult:
+      type: object
+      properties:
+        client_id: { type: string, format: uuid }
+        status: { type: string, enum: [applied, conflict, rejected] }
+        server_id: { type: string, format: uuid, nullable: true }
+        version: { type: integer, nullable: true }
+        server_state:
+          type: object
+          nullable: true
+          description: Present on conflict, so the device can show both versions.
+          additionalProperties: true
+        error: { $ref: '#/components/schemas/ErrorResponse' }
+
+    Job:
+      type: object
+      properties:
+        job_id: { type: string }
+        status: { type: string, enum: [queued, running, succeeded, failed] }
+        progress_pct: { type: number, format: float }
+        poll_url: { type: string }
+        result: { type: object, nullable: true, additionalProperties: true }
+        result_url: { type: string, format: uri, nullable: true }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              row: { type: integer }
+              code: { type: string }
+              message: { type: string }
+
+    TallyQueueItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        entity_type: { type: string, enum: [VOUCHER, LEDGER, STOCK_ITEM, COST_CENTRE] }
+        remote_id:
+          type: string
+          description: Durable identity written to Tally's REMOTEID; a re-push updates rather than duplicates.
+          example: 'aicos:11111111-1111-1111-1111-111111111111:0192abcd-...'
+        payload_xml: { type: string }
+        attempts: { type: integer }
