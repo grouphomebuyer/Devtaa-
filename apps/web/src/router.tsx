@@ -1,6 +1,7 @@
 import {
   createRootRoute,
   createRoute,
+  createHashHistory,
   createRouter,
   redirect,
 } from '@tanstack/react-router';
@@ -116,10 +117,21 @@ const routeTree = rootRoute.addChildren([
   modulePlaceholderRoute,
 ]);
 
+/**
+ * The demo build is served from an arbitrary path (a shared review URL), where
+ * path-based routing would try to match that prefix against the route tree and
+ * land on the not-found screen. Hash history keeps the app self-contained and
+ * still gives working back/forward navigation and shareable deep links.
+ *
+ * The normal build is untouched and continues to use browser history.
+ */
+const isStandaloneDemo = import.meta.env['VITE_STANDALONE_DEMO'] === 'true';
+
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
+  ...(isStandaloneDemo ? { history: createHashHistory() } : {}),
 });
 
 declare module '@tanstack/react-router' {
