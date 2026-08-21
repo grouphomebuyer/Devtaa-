@@ -71,6 +71,15 @@ No AI agent in this architecture has a tool that can approve, post, pay, release
 | [`db/ddl/99_invariant_tests.sql`](db/ddl/99_invariant_tests.sql) | **Run and verified** — see the results table in [`db/README.md`](db/README.md) |
 | [`api/openapi.yaml`](api/openapi.yaml) | **Validated against the OpenAPI 3.1 specification** — 24 paths, 26 schemas, all references resolving |
 
+### Marketing website
+
+| Artefact | Status |
+|---|---|
+| [`website/`](website) | **Devtaa Developers public website** — seven pages of static HTML/CSS/JS, no build step. See [`website/README.md`](website/README.md) for the content checklist and deployment options |
+| [`odoo/devtaa_website/`](odoo/devtaa_website) | Odoo addon that serves the website with clean URLs and posts its enquiry forms into Odoo CRM |
+
+This is separate from the AI-COS product above: AI-COS is the internal construction ERP, the website is the customer-facing marketing site.
+
 ---
 
 ## Verified, not just asserted

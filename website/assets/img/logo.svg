@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" width="260" height="56" role="img" aria-label="Devtaa Developers">
+  <g fill="none" stroke="#C8A24A" stroke-width="3" stroke-linejoin="round">
+    <path d="M10 44 L10 20 L26 8 L42 20 L42 44 Z"/>
+    <path d="M18 44 L18 28 L34 28 L34 44"/>
+  </g>
+  <rect x="24" y="34" width="4" height="10" fill="#C8A24A"/>
+  <text x="56" y="30" font-family="Georgia,'Times New Roman',serif" font-size="24" font-weight="700" letter-spacing="1.5" fill="currentColor">DEVTAA</text>
+  <text x="57" y="45" font-family="Helvetica,Arial,sans-serif" font-size="10.5" letter-spacing="4.2" fill="#C8A24A">DEVELOPERS</text>
+</svg>
